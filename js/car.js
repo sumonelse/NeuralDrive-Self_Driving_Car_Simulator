@@ -72,22 +72,25 @@ class Car {
 
     /**
      * Render the car on the canvas.
+     * Uses canvas transformations to position and rotate the car correctly.
+     *
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      */
     draw(ctx) {
-        // Save the current canvas state
+        // Save the current canvas state before applying transformations
         ctx.save()
 
         // Move to the car's position and rotate to match its angle
+        // This transforms the coordinate system to make drawing easier
         ctx.translate(this.x, this.y)
-        ctx.rotate(-this.angle)
+        ctx.rotate(-this.angle) // Negative angle because canvas Y-axis is inverted
 
-        // Draw the car as a rectangle
+        // Draw the car as a rectangle centered at the origin (after transformation)
         ctx.beginPath()
-        ctx.rect(-this.width, -this.height / 2, this.width, this.height)
+        ctx.rect(-this.width / 2, -this.height / 2, this.width, this.height)
         ctx.fill()
 
-        // Restore the canvas state
+        // Restore the canvas state to remove transformations
         ctx.restore()
     }
 }

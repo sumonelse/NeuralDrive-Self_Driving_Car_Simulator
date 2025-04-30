@@ -5,13 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Self Driving Car Sim.</title>
+    <!-- Main stylesheet for the simulation -->
     <link rel="stylesheet" href="./stylesheets/style.css">
 </head>
 
 <body>
+    <!-- Canvas element where the simulation will be rendered -->
     <canvas id="myCanvas"></canvas>
+
+    <!-- JavaScript dependencies loaded in specific order -->
+    <!-- Utility functions used throughout the application -->
+    <script src="./js/utils.js"></script>
+    <!-- Road class for creating and rendering the road -->
+    <script src="./js/road.js"></script>
+    <!-- Controls class for handling keyboard input -->
     <script src="./js/controls.js"></script>
+    <!-- Car class for vehicle physics and rendering -->
     <script src="./js/car.js"></script>
+    <!-- Main application script that initializes and runs the simulation -->
     <script src="./js/main.js"></script>
 </body>
 
