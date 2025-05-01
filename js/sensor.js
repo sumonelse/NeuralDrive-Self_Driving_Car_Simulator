@@ -20,39 +20,79 @@ class Sensor {
 
     /**
      * Update the sensor system for the current frame.
-     * Casts rays and checks for intersections with road borders.
+     * Casts rays and checks for intersections with road borders and traffic.
      *
      * @param {Array} roadBorders - Array of line segments representing road borders.
+     * @param {Array} traffic - Array of other cars to detect.
      */
-    update(roadBorders) {
+    update(roadBorders, traffic) {
+        // First generate the rays based on car position and angle
         this.#castRays()
+
+        // Reset readings array for new detections
         this.readings = []
+
+        // For each ray, find the closest intersection with any obstacle
         for (let i = 0; i < this.rays.length; i++) {
-            this.readings[i] = this.#getReading(this.rays[i], roadBorders)
+            this.readings[i] = this.#getReading(
+                this.rays[i],
+                roadBorders,
+                traffic
+            )
         }
     }
 
     /**
-     * Private method that detects intersections between a ray and road borders.
+     * Private method that detects intersections between a ray and obstacles (road borders and traffic).
      * Returns the closest intersection point if one exists.
      *
      * @param {Array} ray - Array containing start and end points of the ray.
-     * @param {Array} roadBorders - Array of line segments representing road borders.
+     * @param {Array} roadBorders - Array of line segments representing road borders, traffic.
+     * @param {Array} traffic - Array of other cars to detect.
      * @returns {Object|null} The closest intersection point or null if none exists.
      */
-    #getReading(ray, roadBorders) {
+    #getReading(ray, roadBorders, traffic) {
+        // Array to store all intersection points
         let touches = []
+
+        // Check for intersections with road borders
         for (let i = 0; i < roadBorders.length; i++) {
             const touch = getIntersection(
-                ray[0],
-                ray[1],
-                roadBorders[i][0],
-                roadBorders[i][1]
+                ray[0], // Ray start point
+                ray[1], // Ray end point
+                roadBorders[i][0], // Border segment start point
+                roadBorders[i][1] // Border segment end point
             )
             if (touch) {
                 touches.push(touch)
             }
         }
+
+        for (let i = 0; i < traffic.length; i++) {
+            const poly = traffic[i].polygon
+            const touch = getPolyIntersection(ray[0], ray[1], poly)
+            if (touch) {
+                touches.push(touch)
+            }
+        }
+
+        // Check for intersections with traffic cars
+        for (let i = 0; i < traffic.length; i++) {
+            const poly = traffic[i].polygon
+            for (let j = 0; j < poly.length; j++) {
+                const value = getIntersection(
+                    ray[0],
+                    ray[1],
+                    poly[j],
+                    poly[(j + 1) % poly.length]
+                )
+                if (value) {
+                    touches.push(value)
+                }
+            }
+        }
+
+        // If no intersections found, return null
         if (touches.length === 0) {
             return null
         } else {

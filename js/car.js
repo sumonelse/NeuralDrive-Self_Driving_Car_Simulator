@@ -17,8 +17,12 @@ class Car {
      * @param {number} y - Initial y-coordinate of the car.
      * @param {number} width - Width of the car in pixels.
      * @param {number} height - Height of the car in pixels.
+     * @param {string} controlType - Type of control system to use:
+     *                              "KEYS" for keyboard control
+     *                              "DUMMY" for automated traffic
+     * @param {number} maxSpeed - Maximum forward speed of the car (default: 3).
      */
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, controlType, maxSpeed = 3) {
         // Position and dimensions
         this.x = x
         this.y = y
@@ -28,17 +32,21 @@ class Car {
         // Physics properties
         this.speed = 0 // Current speed (positive = forward, negative = reverse)
         this.acceleration = 0.2 // Rate of speed increase per frame when accelerating
-        this.maxSpeed = 3 // Maximum forward speed
+        this.maxSpeed = maxSpeed // Maximum forward speed
         this.friction = 0.05 // Deceleration rate when not accelerating
         this.angle = 0 // Direction the car is facing (in radians)
 
-        this.damaged = false // Flag to indicate if the car is damaged
+        this.damaged = false // Flag to indicate if the car is damaged (collision occurred)
 
-        // Create sensor system for obstacle detection
-        this.sensor = new Sensor(this)
+        // Only add sensors to the player car, not to traffic cars
+        if (controlType != "DUMMY") {
+            // Create sensor system for obstacle detection
+            this.sensor = new Sensor(this)
+        }
 
-        // Initialize keyboard controls
-        this.controls = new Controls()
+        // Initialize controls based on the specified type
+        // (keyboard controls for player, automated for traffic)
+        this.controls = new Controls(controlType)
     }
 
     /**
@@ -46,20 +54,28 @@ class Car {
      * Called once per frame from the animation loop.
      *
      * @param {Array} roadBorders - Array of line segments representing road boundaries.
+     * @param {Array} traffic - Array of other cars to check for collisions with.
      */
-    update(roadBorders) {
+    update(roadBorders, traffic) {
         if (!this.damaged) {
-            // Update car physics and position
+            // Only update movement and check for collisions if the car isn't already damaged
+
+            // Update car physics and position based on current controls
             this.#move()
 
             // Create a polygon representation of the car for collision detection
+            // This creates the four corners of the car as a polygon
             this.polygon = this.#createPolygon()
 
-            this.damaged = this.#assessDamage(roadBorders)
+            // Check if the car has collided with road borders or traffic
+            this.damaged = this.#assessDamage(roadBorders, traffic)
         }
 
-        // Update sensor readings based on new position and environment
-        this.sensor.update(roadBorders)
+        // Update sensors even if the car is damaged (allows seeing what caused the crash)
+        if (this.sensor) {
+            // Update sensor readings based on new position and environment
+            this.sensor.update(roadBorders, traffic)
+        }
     }
 
     /**
@@ -69,9 +85,15 @@ class Car {
      * @param {Array} roadBorders - Array of line segments representing road boundaries.
      * @returns {boolean} True if the car is damaged (collided), false otherwise.
      */
-    #assessDamage(roadBorders) {
+    #assessDamage(roadBorders, traffic) {
         for (let i = 0; i < roadBorders.length; i++) {
             if (polysIntersect(this.polygon, roadBorders[i])) {
+                // If the car's polygon intersects with any road border, it is damaged
+                return true
+            }
+        }
+        for (let i = 0; i < traffic.length; i++) {
+            if (polysIntersect(this.polygon, traffic[i].polygon)) {
                 // If the car's polygon intersects with any road border, it is damaged
                 return true
             }
@@ -169,13 +191,14 @@ class Car {
      * Changes color based on the car's damage state.
      *
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+     * @param {string} color - The color to use for the car (if not damaged).
      */
-    draw(ctx) {
+    draw(ctx, color = "black") {
         // Set the car's color based on its damage state
         if (this.damaged) {
             ctx.fillStyle = "gray" // Damaged car appears gray
         } else {
-            ctx.fillStyle = "black" // Undamaged car appears black
+            ctx.fillStyle = color // Undamaged car uses the specified color
         }
 
         // Draw the car as a polygon using its calculated corner points
@@ -191,7 +214,9 @@ class Car {
         // Fill the polygon to create the car's body
         ctx.fill()
 
-        // Draw the car's sensor system
-        this.sensor.draw(ctx)
+        if (this.sensor) {
+            // Draw the car's sensor system
+            this.sensor.draw(ctx)
+        }
     }
 }

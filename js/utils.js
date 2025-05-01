@@ -104,3 +104,19 @@ function polysIntersect(poly1, poly2) {
     // If no intersections were found, the polygons don't intersect
     return false
 }
+
+function getPolyIntersection(A, B, poly) {
+    // Check if the line segment from A to B intersects with any edge of the polygon
+    for (let i = 0; i < poly.length; i++) {
+        const touch = getIntersection(
+            A,
+            B,
+            poly[i],
+            poly[(i + 1) % poly.length] // Wrap around to the first point
+        )
+        if (touch) {
+            return touch
+        }
+    }
+    return null
+}

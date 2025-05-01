@@ -22,9 +22,12 @@ const ctx = canvas.getContext("2d")
 // Parameters: center x-position, width (90% of canvas), and 3 lanes
 const road = new Road(canvas.width / 2, canvas.width * 0.9, 3)
 
-// Create a new car instance positioned in the middle lane
-// Parameters: x-position (center of middle lane), y-position, width, height
-const car = new Car(road.getLaneCenter(1), 100, 30, 50)
+// Create the player car instance positioned in the middle lane
+// Parameters: x-position (center of middle lane), y-position, width, height, control type
+const car = new Car(road.getLaneCenter(1), 100, 30, 50, "KEYS")
+
+// Initialize traffic cars (dummy cars that move on their own)
+const traffic = [new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", 2)]
 
 // Animation system
 // ---------------
@@ -47,9 +50,15 @@ function animate() {
     // Clear the entire canvas for the new frame
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+    // Update the traffic cars' positions and physics
+    // Loop through each traffic car and update its state
+    for (let i = 0; i < traffic.length; i++) {
+        traffic[i].update(road.borders, []) // Update each traffic car
+    }
+
     // Update the car's position, physics, and sensor readings
     // Pass road borders to allow sensors to detect them
-    car.update(road.borders)
+    car.update(road.borders, traffic)
 
     // Resize canvas height to match window (responsive design)
     // This is done every frame to handle window resizing
@@ -70,8 +79,13 @@ function animate() {
     // Draw the road with all lanes and borders
     road.draw(ctx)
 
+    // Draw each traffic car on the road
+    for (let i = 0; i < traffic.length; i++) {
+        traffic[i].draw(ctx, "red") // Draw each traffic car
+    }
+
     // Draw the car and its sensors in their updated positions
-    car.draw(ctx)
+    car.draw(ctx, "blue")
 
     // Restore the canvas state (remove camera transformations)
     ctx.restore()
