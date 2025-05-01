@@ -1,7 +1,14 @@
 /**
  * Class representing a car in the self-driving simulation.
- * Handles car physics, movement, sensor systems, and rendering.
+ * Handles car physics, movement, sensor systems, collision detection, and rendering.
  * This is the main vehicle entity that navigates through the environment.
+ *
+ * The car has the following key components:
+ * - Physics system: Handles acceleration, friction, and steering
+ * - Collision detection: Uses polygon-based collision with road borders
+ * - Sensor system: Detects obstacles in the environment
+ * - Controls: Processes keyboard input for manual driving
+ * - Rendering: Visualizes the car and its sensors on the canvas
  */
 class Car {
     /**
@@ -25,6 +32,8 @@ class Car {
         this.friction = 0.05 // Deceleration rate when not accelerating
         this.angle = 0 // Direction the car is facing (in radians)
 
+        this.damaged = false // Flag to indicate if the car is damaged
+
         // Create sensor system for obstacle detection
         this.sensor = new Sensor(this)
 
@@ -39,11 +48,82 @@ class Car {
      * @param {Array} roadBorders - Array of line segments representing road boundaries.
      */
     update(roadBorders) {
-        // Update car physics and position
-        this.#move()
+        if (!this.damaged) {
+            // Update car physics and position
+            this.#move()
+
+            // Create a polygon representation of the car for collision detection
+            this.polygon = this.#createPolygon()
+
+            this.damaged = this.#assessDamage(roadBorders)
+        }
 
         // Update sensor readings based on new position and environment
         this.sensor.update(roadBorders)
+    }
+
+    /**
+     * Private method that checks if the car has collided with any road borders.
+     * Uses polygon intersection detection to determine if the car has gone off-road.
+     *
+     * @param {Array} roadBorders - Array of line segments representing road boundaries.
+     * @returns {boolean} True if the car is damaged (collided), false otherwise.
+     */
+    #assessDamage(roadBorders) {
+        for (let i = 0; i < roadBorders.length; i++) {
+            if (polysIntersect(this.polygon, roadBorders[i])) {
+                // If the car's polygon intersects with any road border, it is damaged
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Private method that creates a polygon representation of the car.
+     * Calculates the four corners of the car based on its position, dimensions, and rotation.
+     * This polygon is used for collision detection with road borders.
+     *
+     * @returns {Array} Array of points (objects with x,y properties) representing the car's corners.
+     */
+    #createPolygon() {
+        const points = []
+
+        // Calculate the radius (distance from center to corner)
+        const rad = Math.hypot(this.width, this.height) / 2
+
+        // Calculate the angle between width and height vectors
+        const alpha = Math.atan2(this.width, this.height)
+
+        // Calculate the four corners of the car using trigonometry
+        // Each corner is calculated by starting at the car's center position
+        // and moving in the direction of the car's angle plus/minus alpha
+
+        // Top-right corner
+        points.push({
+            x: this.x - Math.sin(this.angle - alpha) * rad,
+            y: this.y - Math.cos(this.angle - alpha) * rad,
+        })
+
+        // Top-left corner
+        points.push({
+            x: this.x - Math.sin(this.angle + alpha) * rad,
+            y: this.y - Math.cos(this.angle + alpha) * rad,
+        })
+
+        // Bottom-left corner
+        points.push({
+            x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
+            y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad,
+        })
+
+        // Bottom-right corner
+        points.push({
+            x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
+            y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad,
+        })
+
+        return points
     }
 
     /**
@@ -85,26 +165,31 @@ class Car {
 
     /**
      * Render the car and its sensors on the canvas.
-     * Uses canvas transformations to position and rotate the car correctly.
+     * Uses the polygon representation to draw the car with proper rotation.
+     * Changes color based on the car's damage state.
      *
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      */
     draw(ctx) {
-        // Save the current canvas state before applying transformations
-        ctx.save()
+        // Set the car's color based on its damage state
+        if (this.damaged) {
+            ctx.fillStyle = "gray" // Damaged car appears gray
+        } else {
+            ctx.fillStyle = "black" // Undamaged car appears black
+        }
 
-        // Move to the car's position and rotate to match its angle
-        // This transforms the coordinate system to make drawing easier
-        ctx.translate(this.x, this.y)
-        ctx.rotate(-this.angle) // Negative angle because canvas Y-axis is inverted
-
-        // Draw the car as a rectangle centered at the origin (after transformation)
+        // Draw the car as a polygon using its calculated corner points
         ctx.beginPath()
-        ctx.rect(-this.width / 2, -this.height / 2, this.width, this.height)
-        ctx.fill()
+        // Start at the first point of the polygon
+        ctx.moveTo(this.polygon[0].x, this.polygon[0].y)
 
-        // Restore the canvas state to remove transformations
-        ctx.restore()
+        // Connect lines to each subsequent point
+        for (let i = 1; i < this.polygon.length; i++) {
+            ctx.lineTo(this.polygon[i].x, this.polygon[i].y)
+        }
+
+        // Fill the polygon to create the car's body
+        ctx.fill()
 
         // Draw the car's sensor system
         this.sensor.draw(ctx)

@@ -1,5 +1,13 @@
 /**
  * Utility functions for the self-driving car simulation.
+ *
+ * This file contains mathematical and geometric helper functions used throughout the simulation:
+ * - Linear interpolation (lerp): Used for sensor ray angle calculations and intersection points
+ * - Line intersection detection: Used by sensors to detect obstacles
+ * - Polygon intersection: Used for collision detection between car and environment
+ *
+ * These functions form the mathematical foundation for the simulation's
+ * physics, collision detection, and sensor systems.
  */
 
 /**
@@ -60,4 +68,39 @@ function getIntersection(A, B, C, D) {
 
     // Return null if lines are parallel or don't intersect within segments
     return null
+}
+
+/**
+ * Checks if two polygons intersect by testing all line segments against each other.
+ * This function is used for collision detection between the car and road borders.
+ *
+ * @param {Array} poly1 - First polygon represented as an array of points (objects with x,y properties).
+ * @param {Array} poly2 - Second polygon represented as an array of points (objects with x,y properties).
+ * @returns {boolean} True if the polygons intersect, false otherwise.
+ *
+ * Note: For road borders, poly2 is typically just a line segment (array of 2 points),
+ * while poly1 is the car's 4-corner polygon.
+ */
+function polysIntersect(poly1, poly2) {
+    // Check each line segment of the first polygon against each line segment of the second polygon
+    for (let i = 0; i < poly1.length; i++) {
+        for (let j = 0; j < poly2.length; j++) {
+            // Get the current line segment from poly1 (from current point to next point)
+            // The modulo operation wraps around to the first point when we reach the last point
+            const touch = getIntersection(
+                poly1[i], // Current point of poly1
+                poly1[(i + 1) % poly1.length], // Next point of poly1 (or first point if at the end)
+                poly2[j], // Current point of poly2
+                poly2[(j + 1) % poly2.length] // Next point of poly2 (or first point if at the end)
+            )
+
+            // If any intersection is found, the polygons intersect
+            if (touch) {
+                return true
+            }
+        }
+    }
+
+    // If no intersections were found, the polygons don't intersect
+    return false
 }
