@@ -11,18 +11,30 @@
 
 <body>
     <!-- Canvas element where the simulation will be rendered -->
+    <!-- The canvas provides a drawing surface for the entire simulation -->
     <canvas id="myCanvas"></canvas>
 
-    <!-- JavaScript dependencies loaded in specific order -->
+    <!-- JavaScript dependencies loaded in specific order to ensure proper initialization -->
+    <!-- The order is important due to dependencies between components -->
+
+    <!-- Sensor system for detecting obstacles in the environment -->
+    <script src="./js/sensor.js"></script>
+
     <!-- Utility functions used throughout the application -->
+    <!-- Includes mathematical helpers like lerp and intersection detection -->
     <script src="./js/utils.js"></script>
-    <!-- Road class for creating and rendering the road -->
+
+    <!-- Road class for creating and rendering the road environment -->
     <script src="./js/road.js"></script>
-    <!-- Controls class for handling keyboard input -->
+
+    <!-- Controls class for handling keyboard input to drive the car -->
     <script src="./js/controls.js"></script>
-    <!-- Car class for vehicle physics and rendering -->
+
+    <!-- Car class for vehicle physics, movement, and rendering -->
     <script src="./js/car.js"></script>
+
     <!-- Main application script that initializes and runs the simulation -->
+    <!-- This must be loaded last as it depends on all other components -->
     <script src="./js/main.js"></script>
 </body>
 

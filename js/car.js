@@ -1,14 +1,15 @@
 /**
  * Class representing a car in the self-driving simulation.
- * Handles car physics, movement, and rendering.
+ * Handles car physics, movement, sensor systems, and rendering.
+ * This is the main vehicle entity that navigates through the environment.
  */
 class Car {
     /**
      * Create a new car.
      * @param {number} x - Initial x-coordinate of the car.
      * @param {number} y - Initial y-coordinate of the car.
-     * @param {number} width - Width of the car.
-     * @param {number} height - Height of the car.
+     * @param {number} width - Width of the car in pixels.
+     * @param {number} height - Height of the car in pixels.
      */
     constructor(x, y, width, height) {
         // Position and dimensions
@@ -24,6 +25,9 @@ class Car {
         this.friction = 0.05 // Deceleration rate when not accelerating
         this.angle = 0 // Direction the car is facing (in radians)
 
+        // Create sensor system for obstacle detection
+        this.sensor = new Sensor(this)
+
         // Initialize keyboard controls
         this.controls = new Controls()
     }
@@ -31,14 +35,21 @@ class Car {
     /**
      * Update the car's state for the current animation frame.
      * Called once per frame from the animation loop.
+     *
+     * @param {Array} roadBorders - Array of line segments representing road boundaries.
      */
-    update() {
+    update(roadBorders) {
+        // Update car physics and position
         this.#move()
+
+        // Update sensor readings based on new position and environment
+        this.sensor.update(roadBorders)
     }
 
     /**
      * Private method that handles the car's movement physics.
      * Updates position and rotation based on controls and physics.
+     * Implements a simplified car physics model with acceleration, friction, and steering.
      */
     #move() {
         // Apply acceleration based on controls
@@ -46,6 +57,7 @@ class Car {
         if (this.controls.reverse) this.speed -= this.acceleration
 
         // Limit speed to maximum values (forward and reverse)
+        // Note: Reverse speed is limited to half of forward speed
         if (this.speed > this.maxSpeed) this.speed = this.maxSpeed
         if (this.speed < -this.maxSpeed / 2) this.speed = -this.maxSpeed / 2
 
@@ -54,6 +66,7 @@ class Car {
         if (this.speed < 0) this.speed += this.friction
 
         // Stop the car completely if speed is very low
+        // This prevents tiny floating-point values from affecting movement
         if (Math.abs(this.speed) < this.friction) this.speed = 0
 
         // Handle steering (only when the car is moving)
@@ -71,7 +84,7 @@ class Car {
     }
 
     /**
-     * Render the car on the canvas.
+     * Render the car and its sensors on the canvas.
      * Uses canvas transformations to position and rotate the car correctly.
      *
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
@@ -92,5 +105,8 @@ class Car {
 
         // Restore the canvas state to remove transformations
         ctx.restore()
+
+        // Draw the car's sensor system
+        this.sensor.draw(ctx)
     }
 }
