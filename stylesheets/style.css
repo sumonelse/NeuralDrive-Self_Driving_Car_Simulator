@@ -1,11 +1,29 @@
+/**
+ * Main stylesheet for the self-driving car simulation.
+ *
+ * This CSS file defines the layout and appearance of:
+ * - The overall page layout (side-by-side canvases)
+ * - The car simulation canvas (light background)
+ * - The neural network visualization canvas (dark background)
+ *
+ * The layout is designed to be responsive and fill the entire viewport.
+ */
+
+/* Global page settings */
 body {
     margin: 0;
     padding: 0;
     background-color: darkgray;
-    overflow: hidden;
-    text-align: center;
+    overflow: hidden; /* Prevent scrollbars */
+    text-align: center; /* Center canvases */
 }
 
-#myCanvas {
-    background-color: lightgray;
+/* Car simulation canvas */
+#carCanvas {
+    background-color: lightgray; /* Light background for road visibility */
+}
+
+/* Neural network visualization canvas */
+#networkCanvas {
+    background-color: black; /* Dark background for better network visibility */
 }

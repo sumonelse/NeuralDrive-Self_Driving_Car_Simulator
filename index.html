@@ -5,21 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeuralDrive - Self Driving Car Simulator</title>
-    <!-- Main stylesheet for the simulation -->
+    <!-- Main stylesheet for the simulation interface -->
     <link rel="stylesheet" href="./stylesheets/style.css">
 </head>
 
 <body>
-    <!-- Canvas element where the simulation will be rendered -->
-    <!-- The canvas provides a drawing surface for the entire simulation -->
-    <canvas id="myCanvas"></canvas>
+    <!-- Simulation canvases -->
+    <!-- Split view with car simulation on left and neural network visualization on right -->
+    <canvas id="carCanvas"></canvas>
+    <canvas id="networkCanvas"></canvas>
 
     <!-- JavaScript dependencies loaded in specific order to ensure proper initialization -->
     <!-- The order is important due to dependencies between components -->
 
-    <script src="./js/network.js"></script>
+    <!-- Visualizer for rendering the neural network's internal state -->
+    <!-- Provides real-time visualization of network weights, biases and activations -->
+    <script src="./js/visualizer.js"></script>
+
     <!-- Utility functions used throughout the application -->
-    <!-- Includes mathematical helpers like lerp and intersection detection -->
+    <!-- Includes mathematical helpers for geometry, collision detection and visualization -->
     <script src="./js/utils.js"></script>
 
     <!-- Neural network implementation for the self-driving AI -->

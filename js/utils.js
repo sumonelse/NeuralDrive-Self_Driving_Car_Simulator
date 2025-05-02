@@ -105,6 +105,18 @@ function polysIntersect(poly1, poly2) {
     return false
 }
 
+/**
+ * Finds the intersection between a line segment and a polygon.
+ * Used by sensors to detect intersections with other cars and obstacles.
+ *
+ * @param {Object} A - Start point of the line segment with x,y properties.
+ * @param {Object} B - End point of the line segment with x,y properties.
+ * @param {Array} poly - Polygon represented as an array of points (objects with x,y properties).
+ * @returns {Object|null} Intersection point with x,y coordinates and offset, or null if no intersection.
+ *
+ * This function is primarily used by the car's sensors to detect obstacles in their path.
+ * It checks if any of the sensor rays (line segments) intersect with other vehicles or road borders.
+ */
 function getPolyIntersection(A, B, poly) {
     // Check if the line segment from A to B intersects with any edge of the polygon
     for (let i = 0; i < poly.length; i++) {
@@ -119,4 +131,29 @@ function getPolyIntersection(A, B, poly) {
         }
     }
     return null
+}
+
+/**
+ * Generates an RGBA color string based on a numeric value.
+ * Used for visualizing neural network weights and activations.
+ *
+ * @param {number} value - The value to convert to a color.
+ * @returns {string} RGBA color string.
+ *
+ * Color mapping:
+ * - Positive values: Green with intensity proportional to value
+ * - Negative values: Red with intensity proportional to absolute value
+ * - Zero: Transparent
+ *
+ * This function is used by the Visualizer to represent:
+ * - Connection weights (red for negative, green for positive)
+ * - Neuron activation levels
+ * - Bias values
+ */
+function getRGBA(value) {
+    const alpha = Math.abs(value)
+    const R = value < 0 ? 0 : 255
+    const G = R
+    const B = value > 0 ? 0 : 255
+    return `rgba(${R}, ${G}, ${B}, ${alpha})`
 }
