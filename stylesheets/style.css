@@ -15,7 +15,35 @@ body {
     padding: 0;
     background-color: darkgray;
     overflow: hidden; /* Prevent scrollbars */
-    text-align: center; /* Center canvases */
+    display: flex; /* Use flexbox for three-panel layout */
+    justify-content: center; /* Center the panels horizontally */
+    align-items: center; /* Center the panels vertically */
+}
+
+/* Control buttons container */
+#verticalButtons {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    margin: 0 5px; /* Add spacing between canvases and buttons */
+}
+
+/* Button styling */
+button {
+    border: none;
+    border-radius: 5px;
+    padding: 5px 5px 7px 5px;
+    margin: 2px;
+    cursor: pointer; /* Show pointer cursor on hover */
+    font-size: 16px; /* Emoji size */
+    background-color: white; /* Default background */
+    transition: background-color 0.3s, transform 0.1s; /* Smooth transitions for hover effects */
+}
+
+/* Button hover effect */
+button:hover {
+    background-color: blue; /* Highlight color on hover */
+    color: white; /* Text color on hover */
+    transform: scale(1.1); /* Slightly enlarge button on hover */
 }
 
 /* Car simulation canvas */

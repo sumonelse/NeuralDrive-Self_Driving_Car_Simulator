@@ -46,6 +46,46 @@ class NeuralNetwork {
         // Return the final outputs (control signals)
         return outputs
     }
+
+    /**
+     * Mutates a neural network by randomly adjusting its weights and biases.
+     * This is a key function for implementing genetic algorithms and evolution.
+     *
+     * @param {NeuralNetwork} network - The neural network to mutate
+     * @param {number} amount - The mutation rate (0.0 to 1.0)
+     *                          0.0 = no change, 1.0 = completely random values
+     *
+     * The function uses linear interpolation (lerp) to adjust each weight and bias:
+     * - At amount=0, the original value is kept
+     * - At amount=1, a completely random value replaces the original
+     * - Values between 0-1 create a blend of original and random values
+     *
+     * This allows for controlled mutation that preserves some of the network's
+     * existing "knowledge" while introducing variations for evolution.
+     */
+    static mutate(network, amount = 1) {
+        network.levels.forEach((level) => {
+            // Mutate biases
+            for (let i = 0; i < level.biases.length; i++) {
+                level.biases[i] = lerp(
+                    level.biases[i], // Original value
+                    Math.random() * 2 - 1, // Random value between -1 and 1
+                    amount // Mutation rate
+                )
+            }
+
+            // Mutate weights
+            for (let i = 0; i < level.weights.length; i++) {
+                for (let j = 0; j < level.weights[i].length; j++) {
+                    level.weights[i][j] = lerp(
+                        level.weights[i][j], // Original value
+                        Math.random() * 2 - 1, // Random value between -1 and 1
+                        amount // Mutation rate
+                    )
+                }
+            }
+        })
+    }
 }
 
 /**

@@ -10,9 +10,25 @@
 </head>
 
 <body>
-    <!-- Simulation canvases -->
-    <!-- Split view with car simulation on left and neural network visualization on right -->
+    <!-- Simulation interface -->
+    <!-- Three-panel layout: car simulation, control buttons, and neural network visualization -->
+
+    <!-- Left panel: Car simulation canvas -->
+    <!-- Shows the road, traffic cars, and AI-controlled cars with sensors -->
     <canvas id="carCanvas"></canvas>
+
+    <!-- Center panel: Control buttons -->
+    <!-- Provides user interaction for saving and managing neural networks -->
+    <div id="verticalButtons">
+        <!-- Save button: Stores the current best neural network to local storage -->
+        <button onclick="save()" title="Save neural network">💾</button>
+
+        <!-- Discard button: Removes the saved neural network from local storage -->
+        <button onclick="discard()" title="Discard saved neural network">🗑️</button>
+    </div>
+
+    <!-- Right panel: Neural network visualization canvas -->
+    <!-- Displays real-time visualization of the neural network's internal state -->
     <canvas id="networkCanvas"></canvas>
 
     <!-- JavaScript dependencies loaded in specific order to ensure proper initialization -->

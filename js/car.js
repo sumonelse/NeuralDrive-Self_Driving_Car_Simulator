@@ -108,25 +108,31 @@ class Car {
     }
 
     /**
-     * Private method that checks if the car has collided with any road borders.
-     * Uses polygon intersection detection to determine if the car has gone off-road.
+     * Private method that checks if the car has collided with road borders or traffic.
+     * Uses polygon intersection detection to determine collisions.
      *
      * @param {Array} roadBorders - Array of line segments representing road boundaries.
+     * @param {Array} traffic - Array of other cars to check for collisions with.
      * @returns {boolean} True if the car is damaged (collided), false otherwise.
      */
     #assessDamage(roadBorders, traffic) {
+        // Check for collisions with road borders
         for (let i = 0; i < roadBorders.length; i++) {
             if (polysIntersect(this.polygon, roadBorders[i])) {
                 // If the car's polygon intersects with any road border, it is damaged
                 return true
             }
         }
+
+        // Check for collisions with other traffic cars
         for (let i = 0; i < traffic.length; i++) {
             if (polysIntersect(this.polygon, traffic[i].polygon)) {
-                // If the car's polygon intersects with any road border, it is damaged
+                // If the car's polygon intersects with any traffic car, it is damaged
                 return true
             }
         }
+
+        // No collisions detected
         return false
     }
 
@@ -222,7 +228,7 @@ class Car {
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      * @param {string} color - The color to use for the car (if not damaged).
      */
-    draw(ctx, color = "black") {
+    draw(ctx, color = "black", showSensors = false) {
         // Set the car's color based on its damage state
         if (this.damaged) {
             ctx.fillStyle = "gray" // Damaged car appears gray
@@ -243,7 +249,7 @@ class Car {
         // Fill the polygon to create the car's body
         ctx.fill()
 
-        if (this.sensor) {
+        if (this.sensor && showSensors) {
             // Draw the car's sensor system
             this.sensor.draw(ctx)
         }
