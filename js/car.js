@@ -38,10 +38,18 @@ class Car {
 
         this.damaged = false // Flag to indicate if the car is damaged (collision occurred)
 
+        this.useBrain = controlType === "AI" // Flag to indicate if the car uses AI brain
+
         // Only add sensors to the player car, not to traffic cars
         if (controlType != "DUMMY") {
             // Create sensor system for obstacle detection
             this.sensor = new Sensor(this)
+
+            // Create neural network "brain" with architecture:
+            // - Input layer: one neuron per sensor ray (sensor.rayCount)
+            // - Hidden layer: 6 neurons for processing
+            // - Output layer: 4 neurons (forward, left, right, reverse controls)
+            this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4])
         }
 
         // Initialize controls based on the specified type
@@ -75,6 +83,27 @@ class Car {
         if (this.sensor) {
             // Update sensor readings based on new position and environment
             this.sensor.update(roadBorders, traffic)
+
+            // Convert sensor readings to neural network inputs
+            // For each sensor ray:
+            // - If no obstacle detected (null reading): input = 0
+            // - If obstacle detected: input = 1 - offset (closer obstacles = higher value)
+            const offsets = this.sensor.readings.map((s) =>
+                s == null ? 0 : 1 - s.offset
+            )
+
+            // Feed sensor data into the neural network to get control outputs
+            const outputs = NeuralNetwork.feedForward(offsets, this.brain)
+            // console.log(outputs)
+
+            // If this car is AI-controlled, apply the neural network outputs to controls
+            if (this.useBrain) {
+                // Each output neuron controls one aspect of the car's movement
+                this.controls.forward = outputs[0] // First output neuron controls acceleration
+                this.controls.left = outputs[1] // Second output neuron controls left steering
+                this.controls.right = outputs[2] // Third output neuron controls right steering
+                this.controls.reverse = outputs[3] // Fourth output neuron controls braking/reverse
+            }
         }
     }
 

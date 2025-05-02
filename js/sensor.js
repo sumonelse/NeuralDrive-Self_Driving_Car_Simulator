@@ -2,6 +2,12 @@
  * Class representing a sensor system for the self-driving car.
  * Creates and manages a set of rays that detect obstacles in the environment.
  * These sensors simulate LIDAR or radar systems used in real self-driving vehicles.
+ *
+ * The sensor system serves as the "eyes" of the neural network:
+ * 1. Rays are cast out from the car in different directions
+ * 2. Each ray detects distance to the nearest obstacle (road border or traffic)
+ * 3. These distance readings are fed into the neural network as inputs
+ * 4. The neural network then decides how to control the car based on these inputs
  */
 class Sensor {
     /**
@@ -11,11 +17,11 @@ class Sensor {
      */
     constructor(car) {
         this.car = car
-        this.rayCount = 5 // Number of sensor rays to cast
-        this.rayLength = 100 // Maximum length of each ray
-        this.raySpread = Math.PI / 2 // Angular spread of rays (90 degrees)
-        this.rays = [] // Array to store ray coordinates
-        this.readings = [] // Array to store intersection data with obstacles
+        this.rayCount = 5 // Number of sensor rays to cast (also determines neural network input size)
+        this.rayLength = 150 // Maximum length of each ray (detection distance)
+        this.raySpread = Math.PI / 2 // Angular spread of rays (90 degrees field of view)
+        this.rays = [] // Array to store ray coordinates [start, end] for each ray
+        this.readings = [] // Array to store intersection data with obstacles (used as neural network inputs)
     }
 
     /**

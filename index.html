@@ -17,23 +17,33 @@
     <!-- JavaScript dependencies loaded in specific order to ensure proper initialization -->
     <!-- The order is important due to dependencies between components -->
 
-    <!-- Sensor system for detecting obstacles in the environment -->
-    <script src="./js/sensor.js"></script>
-
+    <script src="./js/network.js"></script>
     <!-- Utility functions used throughout the application -->
     <!-- Includes mathematical helpers like lerp and intersection detection -->
     <script src="./js/utils.js"></script>
 
+    <!-- Neural network implementation for the self-driving AI -->
+    <!-- Provides the "brain" that processes sensor data and controls the car -->
+    <script src="./js/network.js"></script>
+
+    <!-- Sensor system for detecting obstacles in the environment -->
+    <!-- Acts as the "eyes" of the car, feeding data to the neural network -->
+    <script src="./js/sensor.js"></script>
+
     <!-- Road class for creating and rendering the road environment -->
+    <!-- Defines the driving surface, lanes, and boundaries -->
     <script src="./js/road.js"></script>
 
-    <!-- Controls class for handling keyboard input to drive the car -->
+    <!-- Controls class for handling input to drive the car -->
+    <!-- Supports both keyboard input and neural network control -->
     <script src="./js/controls.js"></script>
 
     <!-- Car class for vehicle physics, movement, and rendering -->
+    <!-- The main entity that integrates all other components -->
     <script src="./js/car.js"></script>
 
     <!-- Main application script that initializes and runs the simulation -->
+    <!-- Coordinates all components and implements the animation loop -->
     <!-- This must be loaded last as it depends on all other components -->
     <script src="./js/main.js"></script>
 </body>

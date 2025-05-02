@@ -3,8 +3,14 @@
  * Sets up the canvas, initializes objects, and starts the animation loop.
  *
  * This file serves as the central controller for the simulation,
- * coordinating the road, car, sensor systems, and animation loop.
+ * coordinating the road, car, sensor systems, neural network, and animation loop.
  * It implements a simple game loop pattern with update and render phases.
+ *
+ * The simulation demonstrates:
+ * 1. Car physics with realistic movement and collision detection
+ * 2. Sensor systems that detect the environment (road borders and traffic)
+ * 3. Neural network AI that can control the car based on sensor inputs
+ * 4. Traffic simulation with multiple vehicles
  */
 
 // Canvas setup
@@ -24,10 +30,21 @@ const road = new Road(canvas.width / 2, canvas.width * 0.9, 3)
 
 // Create the player car instance positioned in the middle lane
 // Parameters: x-position (center of middle lane), y-position, width, height, control type
-const car = new Car(road.getLaneCenter(1), 100, 30, 50, "KEYS")
+// Using "AI" control type enables the neural network to drive the car
+const car = new Car(road.getLaneCenter(1), 100, 30, 50, "AI")
 
 // Initialize traffic cars (dummy cars that move on their own)
-const traffic = [new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", 2)]
+// These cars use the "DUMMY" control type which makes them drive forward automatically
+// The last parameter (2) sets a slower max speed for traffic cars
+const traffic = [
+    new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", 2),
+    new Car(road.getLaneCenter(0), -300, 30, 50, "DUMMY", 2),
+    new Car(road.getLaneCenter(2), -300, 30, 50, "DUMMY", 2),
+    new Car(road.getLaneCenter(0), -500, 30, 50, "DUMMY", 2),
+    new Car(road.getLaneCenter(1), -500, 30, 50, "DUMMY", 2),
+    new Car(road.getLaneCenter(1), -700, 30, 50, "DUMMY", 2),
+    new Car(road.getLaneCenter(2), -700, 30, 50, "DUMMY", 2),
+]
 
 // Animation system
 // ---------------
