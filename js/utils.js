@@ -82,16 +82,55 @@ function getIntersection(A, B, C, D) {
  * while poly1 is the car's 4-corner polygon.
  */
 function polysIntersect(poly1, poly2) {
+    // Safety check: ensure both polygons are valid arrays with length
+    if (
+        !poly1 ||
+        !poly2 ||
+        !Array.isArray(poly1) ||
+        !Array.isArray(poly2) ||
+        poly1.length === 0 ||
+        poly2.length === 0
+    ) {
+        return false
+    }
+
     // Check each line segment of the first polygon against each line segment of the second polygon
     for (let i = 0; i < poly1.length; i++) {
         for (let j = 0; j < poly2.length; j++) {
+            // Safety check: ensure polygon points are valid objects with x,y properties
+            if (
+                !poly1[i] ||
+                !poly2[j] ||
+                typeof poly1[i].x === "undefined" ||
+                typeof poly1[i].y === "undefined" ||
+                typeof poly2[j].x === "undefined" ||
+                typeof poly2[j].y === "undefined"
+            ) {
+                continue
+            }
+
             // Get the current line segment from poly1 (from current point to next point)
             // The modulo operation wraps around to the first point when we reach the last point
+            const nextI = (i + 1) % poly1.length
+            const nextJ = (j + 1) % poly2.length
+
+            // Safety check for next points
+            if (
+                !poly1[nextI] ||
+                !poly2[nextJ] ||
+                typeof poly1[nextI].x === "undefined" ||
+                typeof poly1[nextI].y === "undefined" ||
+                typeof poly2[nextJ].x === "undefined" ||
+                typeof poly2[nextJ].y === "undefined"
+            ) {
+                continue
+            }
+
             const touch = getIntersection(
                 poly1[i], // Current point of poly1
-                poly1[(i + 1) % poly1.length], // Next point of poly1 (or first point if at the end)
+                poly1[nextI], // Next point of poly1 (or first point if at the end)
                 poly2[j], // Current point of poly2
-                poly2[(j + 1) % poly2.length] // Next point of poly2 (or first point if at the end)
+                poly2[nextJ] // Next point of poly2 (or first point if at the end)
             )
 
             // If any intersection is found, the polygons intersect

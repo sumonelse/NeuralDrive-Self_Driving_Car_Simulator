@@ -49,38 +49,9 @@ if (localStorage.getItem("bestBrain")) {
     }
 }
 
-// Initialize traffic cars (dummy cars that move on their own)
-// These cars use the "DUMMY" control type which makes them drive forward automatically
-// Parameters:
-// - Position: Lane center and y-coordinate (negative = ahead of player)
-// - Size: 30x50 pixels for all traffic cars
-// - Control: "DUMMY" for automated movement
-// - Speed: 2 (slower than player cars for easier navigation)
-// - Color: Random color for each car (using getRandomColor from utils.js)
-const traffic = [
-    // First wave of traffic (closest to player)
-    new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", 2, getRandomColor()), // Car directly ahead
-
-    // Second wave of traffic
-    new Car(road.getLaneCenter(0), -300, 30, 50, "DUMMY", 2, getRandomColor()), // Car in left lane
-    new Car(road.getLaneCenter(2), -300, 30, 50, "DUMMY", 2, getRandomColor()), // Car in right lane
-
-    // Additional traffic cars at various distances
-    new Car(road.getLaneCenter(0), -500, 30, 50, "DUMMY", 2, getRandomColor()), // Left lane
-    new Car(road.getLaneCenter(1), -600, 30, 50, "DUMMY", 2, getRandomColor()), // Middle lane
-    new Car(road.getLaneCenter(1), -700, 30, 50, "DUMMY", 2, getRandomColor()), // Middle lane
-    new Car(road.getLaneCenter(2), -850, 30, 50, "DUMMY", 3, getRandomColor()), // Right lane
-    new Car(road.getLaneCenter(0), -900, 30, 50, "DUMMY", 4, getRandomColor()), // Left lane
-    new Car(
-        road.getLaneCenter(1),
-        -900,
-        30,
-        50,
-        "DUMMY",
-        3.95,
-        getRandomColor()
-    ), // Left lane
-]
+// Initialize the traffic generator with the road and initial density
+// This replaces the static traffic array with procedurally generated traffic
+const trafficGenerator = new TrafficGenerator(road, 0.6, 3000)
 
 // Animation system
 // ---------------
@@ -173,16 +144,22 @@ function animate(time) {
     // Update phase - Physics and state calculations
     // --------------------------------------------
 
-    // Update the traffic cars' positions and physics
-    for (let i = 0; i < traffic.length; i++) {
-        // Empty array as second parameter because traffic cars don't need to detect each other
-        traffic[i].update(road.borders, [])
+    // Update traffic based on the best car's position first
+    // This ensures traffic cars have their polygons created before collision detection
+    if (bestCar) {
+        trafficGenerator.update(bestCar.y)
+    } else {
+        // If no best car exists yet (first frame), use a default position
+        trafficGenerator.update(0)
     }
+
+    // Get the updated traffic array
+    const currentTraffic = trafficGenerator.getTraffic()
 
     // Update the player car's position, physics, and sensor readings
     // Pass both road borders and traffic cars for collision and sensor detection
     for (let i = 0; i < cars.length; i++) {
-        cars[i].update(road.borders, traffic)
+        cars[i].update(road.borders, currentTraffic)
     }
 
     // Find the car with the highest y-position (closest to the top of the canvas)
@@ -211,6 +188,7 @@ function animate(time) {
 
     // Draw all traffic cars with their random colors
     // Each traffic car has a unique color assigned during initialization
+    const traffic = trafficGenerator.getTraffic()
     for (let i = 0; i < traffic.length; i++) {
         traffic[i].draw(carCtx) // Draw without sensors (false by default)
     }

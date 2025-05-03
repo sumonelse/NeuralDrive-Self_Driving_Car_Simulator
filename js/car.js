@@ -100,14 +100,17 @@ class Car {
      * @param {Array} traffic - Array of other cars to check for collisions with.
      */
     update(roadBorders, traffic) {
+        // Always create the polygon for collision detection, even if damaged
+        // This ensures the polygon exists for other cars to detect collisions with
+        this.polygon = this.#createPolygon()
+
         if (!this.damaged) {
             // Only update movement and check for collisions if the car isn't already damaged
 
             // Update car physics and position based on current controls
             this.#move()
 
-            // Create a polygon representation of the car for collision detection
-            // This creates the four corners of the car as a polygon
+            // Update the polygon after movement
             this.polygon = this.#createPolygon()
 
             // Check if the car has collided with road borders or traffic
@@ -161,7 +164,12 @@ class Car {
 
         // Check for collisions with other traffic cars
         for (let i = 0; i < traffic.length; i++) {
-            if (polysIntersect(this.polygon, traffic[i].polygon)) {
+            // Make sure the traffic car has a valid polygon before checking collision
+            if (
+                traffic[i] &&
+                traffic[i].polygon &&
+                polysIntersect(this.polygon, traffic[i].polygon)
+            ) {
                 // If the car's polygon intersects with any traffic car, it is damaged
                 return true
             }
