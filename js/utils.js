@@ -157,3 +157,15 @@ function getRGBA(value) {
     const B = value > 0 ? 0 : 255
     return `rgba(${R}, ${G}, ${B}, ${alpha})`
 }
+
+/**
+ * Generates a random color for traffic cars.
+ * Creates visually distinct colors for better identification of different vehicles.
+ *
+ * @returns {string} A random color in hexadecimal format (#RRGGBB)
+ */
+
+function getRandomColor() {
+    const hue = Math.random() * 260
+    return `hsl(${hue}, 100%, 60%)`
+}

@@ -5,10 +5,11 @@
  *
  * The car has the following key components:
  * - Physics system: Handles acceleration, friction, and steering
- * - Collision detection: Uses polygon-based collision with road borders
+ * - Collision detection: Uses polygon-based collision with road borders and traffic
  * - Sensor system: Detects obstacles in the environment
- * - Controls: Processes keyboard input for manual driving
- * - Rendering: Visualizes the car and its sensors on the canvas
+ * - Neural network: Processes sensor data to make driving decisions (for AI cars)
+ * - Controls: Processes keyboard input for manual driving or AI outputs
+ * - Rendering: Visualizes the car with custom colors and optional sensors
  */
 class Car {
     /**
@@ -20,9 +21,19 @@ class Car {
      * @param {string} controlType - Type of control system to use:
      *                              "KEYS" for keyboard control
      *                              "DUMMY" for automated traffic
+     *                              "AI" for neural network control
      * @param {number} maxSpeed - Maximum forward speed of the car (default: 3).
+     * @param {string} color - Color of the car for visual distinction (default: "blue").
      */
-    constructor(x, y, width, height, controlType, maxSpeed = 3) {
+    constructor(
+        x,
+        y,
+        width,
+        height,
+        controlType,
+        maxSpeed = 3,
+        color = "blue"
+    ) {
         // Position and dimensions
         this.x = x
         this.y = y
@@ -40,7 +51,7 @@ class Car {
 
         this.useBrain = controlType === "AI" // Flag to indicate if the car uses AI brain
 
-        // Only add sensors to the player car, not to traffic cars
+        // Only add sensors and neural network to AI cars, not to traffic cars
         if (controlType != "DUMMY") {
             // Create sensor system for obstacle detection
             this.sensor = new Sensor(this)
@@ -53,8 +64,32 @@ class Car {
         }
 
         // Initialize controls based on the specified type
-        // (keyboard controls for player, automated for traffic)
+        // (keyboard controls for player, automated for traffic, neural network for AI)
         this.controls = new Controls(controlType)
+
+        // Visual representation setup
+        // --------------------------
+        // Load car sprite image
+        this.img = new Image() // Create an image object for the car's visual representation
+        this.img.src = "assets/car.png" // Load the car image from the specified path
+
+        // Create a colored mask for the car
+        this.mask = document.createElement("canvas") // Create a canvas for the car's mask
+        this.mask.width = width // Set the mask canvas width to the car's width
+        this.mask.height = height // Set the mask canvas height to the car's height
+
+        // Set up the mask with the specified color
+        const maskCtx = this.mask.getContext("2d") // Get the 2D rendering context for the mask canvas
+        this.img.onload = () => {
+            // Create a colored rectangle as the base
+            maskCtx.fillStyle = color // Set the fill color for the mask
+            maskCtx.rect(0, 0, this.width, this.height) // Draw a rectangle covering the entire mask canvas
+            maskCtx.fill() // Fill the rectangle with the specified color
+
+            // Apply the car shape as a mask (only keep color where the car image is opaque)
+            maskCtx.globalCompositeOperation = "destination-atop" // Set composite operation to keep only the car shape
+            maskCtx.drawImage(this.img, 0, 0, this.width, this.height) // Draw the car image on top of the mask
+        }
     }
 
     /**
@@ -222,36 +257,50 @@ class Car {
 
     /**
      * Render the car and its sensors on the canvas.
-     * Uses the polygon representation to draw the car with proper rotation.
-     * Changes color based on the car's damage state.
+     * Uses sprite images with color masks for realistic car appearance.
+     * Optionally shows sensors for AI-controlled cars.
      *
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
-     * @param {string} color - The color to use for the car (if not damaged).
+     * @param {boolean} showSensors - Whether to display the car's sensors (default: false).
      */
-    draw(ctx, color = "black", showSensors = false) {
-        // Set the car's color based on its damage state
-        if (this.damaged) {
-            ctx.fillStyle = "gray" // Damaged car appears gray
-        } else {
-            ctx.fillStyle = color // Undamaged car uses the specified color
-        }
-
-        // Draw the car as a polygon using its calculated corner points
-        ctx.beginPath()
-        // Start at the first point of the polygon
-        ctx.moveTo(this.polygon[0].x, this.polygon[0].y)
-
-        // Connect lines to each subsequent point
-        for (let i = 1; i < this.polygon.length; i++) {
-            ctx.lineTo(this.polygon[i].x, this.polygon[i].y)
-        }
-
-        // Fill the polygon to create the car's body
-        ctx.fill()
-
+    draw(ctx, showSensors = false) {
+        // Draw sensors if they exist and showSensors is true
         if (this.sensor && showSensors) {
             // Draw the car's sensor system
             this.sensor.draw(ctx)
         }
+
+        // Save the current canvas state
+        ctx.save()
+
+        // Position and rotate the car
+        ctx.translate(this.x, this.y) // Move to car's position
+        ctx.rotate(-this.angle) // Rotate to match car's direction
+
+        // Draw the colored mask (only for undamaged cars)
+        if (!this.damaged) {
+            // Draw the colored mask first
+            ctx.drawImage(
+                this.mask,
+                -this.width / 2, // Center the image horizontally
+                -this.height / 2, // Center the image vertically
+                this.width,
+                this.height
+            )
+            // Use multiply blend mode to combine the mask with the car image
+            ctx.globalCompositeOperation = "multiply" // Set composite operation to multiply
+        }
+
+        // Draw the car image on top
+        ctx.drawImage(
+            this.img,
+            -this.width / 2, // Center the image horizontally
+            -this.height / 2, // Center the image vertically
+            this.width,
+            this.height
+        )
+
+        // Restore the canvas state
+        ctx.restore()
     }
 }

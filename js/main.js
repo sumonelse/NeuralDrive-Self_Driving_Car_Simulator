@@ -51,16 +51,35 @@ if (localStorage.getItem("bestBrain")) {
 
 // Initialize traffic cars (dummy cars that move on their own)
 // These cars use the "DUMMY" control type which makes them drive forward automatically
-// The last parameter (2) sets a slower max speed for traffic cars
+// Parameters:
+// - Position: Lane center and y-coordinate (negative = ahead of player)
+// - Size: 30x50 pixels for all traffic cars
+// - Control: "DUMMY" for automated movement
+// - Speed: 2 (slower than player cars for easier navigation)
+// - Color: Random color for each car (using getRandomColor from utils.js)
 const traffic = [
-    new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", 2), // Car directly ahead
-    new Car(road.getLaneCenter(0), -300, 30, 50, "DUMMY", 2), // Car in left lane
-    new Car(road.getLaneCenter(2), -300, 30, 50, "DUMMY", 2), // Car in right lane
-    new Car(road.getLaneCenter(0), -500, 30, 50, "DUMMY", 2), // Another car further ahead
-    new Car(road.getLaneCenter(1), -700, 30, 50, "DUMMY", 2), // Another car further ahead
-    new Car(road.getLaneCenter(1), -600, 30, 50, "DUMMY", 2), // Another car further ahead
-    new Car(road.getLaneCenter(2), -850, 30, 50, "DUMMY", 2), // Another car further ahead
-    new Car(road.getLaneCenter(0), -900, 30, 50, "DUMMY", 2), // Another car further ahead
+    // First wave of traffic (closest to player)
+    new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", 2, getRandomColor()), // Car directly ahead
+
+    // Second wave of traffic
+    new Car(road.getLaneCenter(0), -300, 30, 50, "DUMMY", 2, getRandomColor()), // Car in left lane
+    new Car(road.getLaneCenter(2), -300, 30, 50, "DUMMY", 2, getRandomColor()), // Car in right lane
+
+    // Additional traffic cars at various distances
+    new Car(road.getLaneCenter(0), -500, 30, 50, "DUMMY", 2, getRandomColor()), // Left lane
+    new Car(road.getLaneCenter(1), -600, 30, 50, "DUMMY", 2, getRandomColor()), // Middle lane
+    new Car(road.getLaneCenter(1), -700, 30, 50, "DUMMY", 2, getRandomColor()), // Middle lane
+    new Car(road.getLaneCenter(2), -850, 30, 50, "DUMMY", 3, getRandomColor()), // Right lane
+    new Car(road.getLaneCenter(0), -900, 30, 50, "DUMMY", 4, getRandomColor()), // Left lane
+    new Car(
+        road.getLaneCenter(1),
+        -900,
+        30,
+        50,
+        "DUMMY",
+        3.95,
+        getRandomColor()
+    ), // Left lane
 ]
 
 // Animation system
@@ -128,7 +147,7 @@ function generateCars(N) {
                 30, // width
                 50, // height
                 "AI", // control type
-                3 // maximum speed
+                5 // maximum speed
             )
         )
     }
@@ -190,18 +209,21 @@ function animate(time) {
     // Draw the road with all lanes and borders
     road.draw(carCtx)
 
-    // Draw all traffic cars in red
+    // Draw all traffic cars with their random colors
+    // Each traffic car has a unique color assigned during initialization
     for (let i = 0; i < traffic.length; i++) {
-        traffic[i].draw(carCtx, "red")
+        traffic[i].draw(carCtx) // Draw without sensors (false by default)
     }
 
-    carCtx.globalAlpha = 0.2 // Set transparency for the player car
-    // Draw the player car in blue with its sensors
+    // Draw all AI cars with transparency to reduce visual clutter
+    carCtx.globalAlpha = 0.2 // Set transparency for the AI cars
     for (let i = 0; i < cars.length; i++) {
-        cars[i].draw(carCtx, "blue")
+        cars[i].draw(carCtx) // Draw all cars without sensors
     }
-    carCtx.globalAlpha = 1 // Reset transparency for the next drawing
-    bestCar.draw(carCtx, "blue", true) // Draw the player car with sensors
+
+    // Draw the best performing car with full opacity and sensors
+    carCtx.globalAlpha = 1 // Reset transparency for the best car
+    bestCar.draw(carCtx, true) // Draw with sensors (true) to show its "vision"
 
     // Restore the canvas state (remove camera transformations)
     carCtx.restore()
